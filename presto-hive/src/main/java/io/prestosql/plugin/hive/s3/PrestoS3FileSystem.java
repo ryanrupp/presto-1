@@ -345,7 +345,7 @@ public class PrestoS3FileSystem
 
         if (metadata == null) {
             // check if this path is a directory
-            Iterator<LocatedFileStatus> iterator = listPrefix(path);
+            Iterator<LocatedFileStatus> iterator = listPrefix(path, 1);
             if (iterator.hasNext()) {
                 return new FileStatus(0, true, 1, 0, 0, qualifiedPath(path));
             }
@@ -509,6 +509,11 @@ public class PrestoS3FileSystem
 
     private Iterator<LocatedFileStatus> listPrefix(Path path)
     {
+        return listPrefix(path, null);
+    }
+
+    private Iterator<LocatedFileStatus> listPrefix(Path path, Integer optMaxKeys)
+    {
         String key = keyFromPath(path);
         if (!key.isEmpty()) {
             key += PATH_SEPARATOR;
@@ -518,6 +523,7 @@ public class PrestoS3FileSystem
                 .withBucketName(getBucketName(uri))
                 .withPrefix(key)
                 .withDelimiter(PATH_SEPARATOR)
+                .withMaxKeys(optMaxKeys)
                 .withRequesterPays(requesterPaysEnabled);
 
         STATS.newListObjectsCall();
